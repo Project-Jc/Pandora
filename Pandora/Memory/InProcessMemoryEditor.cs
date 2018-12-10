@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Diagnostics;
 
 namespace Pandora
 {
@@ -10,7 +10,16 @@ namespace Pandora
         public InProcessMemoryEditor() 
             : base(Process.GetCurrentProcess())
         {
+
         }
+
+
+        public Detour CreateDetour(Delegate originalFunction, Delegate detourFunction) => 
+            new Detour(originalFunction, detourFunction, this);
+
+        public T FuncPtrToDelegate<T>(IntPtr address) where T : class => 
+            Marshal.GetDelegateForFunctionPointer<T>(address);
+
 
         public override T Read<T>(IntPtr ptr) =>
             Marshal.PtrToStructure<T>(ptr);
@@ -22,7 +31,6 @@ namespace Pandora
                 array[i] = Read<T>(ptr + (i * vSize));
             } return array;
         }
-
 
         public override bool ReadBool(IntPtr ptr) => *(bool*)ptr;
 
@@ -69,8 +77,6 @@ namespace Pandora
         public override ushort ReadUShort(IntPtr ptr) => *(ushort*)ptr;
 
 
-
-
         public override bool Write<T>(IntPtr ptr, T value)
         {
             Marshal.StructureToPtr(value, ptr, false);
@@ -79,8 +85,8 @@ namespace Pandora
 
         public override bool WriteProtected<T>(IntPtr ptr, T value)
         {
-            using (var memOp = new MemoryProtectionOperation(ptr, Marshal.SizeOf<T>())) {
-                if (memOp.ChangeMemoryProtection()) {
+            using (var memoryOperation = new MemoryProtectionOperation(ptr, Marshal.SizeOf<T>())) {
+                if (memoryOperation.Apply()) {
                     return Write(ptr, value);
                 }
             } return false;
@@ -104,31 +110,22 @@ namespace Pandora
             return true;
         }
 
-        public override bool Write(IntPtr ptr, byte value) => 
-            (*(byte*)ptr = value) == ReadByte(ptr);
+        public override bool Write(IntPtr ptr, byte value) => (*(byte*)ptr = value) == ReadByte(ptr);
 
-        public override bool Write(IntPtr ptr, short value) => 
-            (*(short*)ptr = value) == ReadShort(ptr);
+        public override bool Write(IntPtr ptr, short value) => (*(short*)ptr = value) == ReadShort(ptr);
 
-        public override bool Write(IntPtr ptr, ushort value) => 
-            (*(ushort*)ptr = value) == ReadUShort(ptr);
+        public override bool Write(IntPtr ptr, ushort value) => (*(ushort*)ptr = value) == ReadUShort(ptr);
 
-        public override bool Write(IntPtr ptr, int value) => 
-            (*(int*)ptr = value) == ReadInt(ptr);
+        public override bool Write(IntPtr ptr, int value) => (*(int*)ptr = value) == ReadInt(ptr);
 
-        public override bool Write(IntPtr ptr, uint value) => 
-            (*(uint*)ptr = value) == ReadUInt(ptr);
+        public override bool Write(IntPtr ptr, uint value) => (*(uint*)ptr = value) == ReadUInt(ptr);
 
-        public override bool Write(IntPtr ptr, long value) => 
-            (*(long*)ptr = value) == ReadLong(ptr);
+        public override bool Write(IntPtr ptr, long value) => (*(long*)ptr = value) == ReadLong(ptr);
 
-        public override bool Write(IntPtr ptr, ulong value) => 
-            (*(ulong*)ptr = value) == ReadULong(ptr);
+        public override bool Write(IntPtr ptr, ulong value) => (*(ulong*)ptr = value) == ReadULong(ptr);
 
-        public override bool Write(IntPtr ptr, float value) => 
-            (*(float*)ptr = value) == ReadFloat(ptr);
+        public override bool Write(IntPtr ptr, float value) => (*(float*)ptr = value) == ReadFloat(ptr);
 
-        public override bool Write(IntPtr ptr, double value) => 
-            (*(double*)ptr = value) == ReadDouble(ptr);
+        public override bool Write(IntPtr ptr, double value) => (*(double*)ptr = value) == ReadDouble(ptr);
     }
 }

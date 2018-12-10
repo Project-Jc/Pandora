@@ -16,48 +16,40 @@ namespace Pandora.DllInjection
             try {
 
                 // Open the process for modification.
-                //
                 IntPtr hProcess = OpenProcess(ProcessAccessFlags.All, false, dwProcessId);
                 if (hProcess == IntPtr.Zero)
                     return DllInjectResult.Failure | DllInjectResult.OpeningProcess;
 
                 // Get the address of LoadLibrary.
-                //
                 IntPtr loadLibraryAddress = GetProcAddress(GetModuleHandle("kernel32.dll"), "LoadLibraryA");
                 if (loadLibraryAddress == IntPtr.Zero)
                     return DllInjectResult.Failure | DllInjectResult.FindingLoadLibrary;
 
                 // Allocated a region of memory.
-                //
                 IntPtr allocatedMemory = VirtualAllocEx(hProcess, IntPtr.Zero, (IntPtr)dll.Length, AllocationType.Commit, MemoryProtection.ExecuteReadWrite);
                 if (allocatedMemory == IntPtr.Zero)
                     return DllInjectResult.Failure | DllInjectResult.AllocatingMemory;
 
                 // Write the name of our DLL to memory.
-                //
                 byte[] dllBytes = Encoding.ASCII.GetBytes(dll);
                 bool dataWritten = WriteProcessMemory(hProcess, allocatedMemory, dllBytes, dllBytes.Length, out var lpNumberOfBytesWritten);
                 if (!dataWritten)
                     return DllInjectResult.Failure | DllInjectResult.WritingMemory;
 
                 // Have LoadLibrary load our DLL by creating a remote thread.
-                //
                 IntPtr remoteThread = CreateRemoteThread(hProcess, IntPtr.Zero, IntPtr.Zero, loadLibraryAddress, allocatedMemory, 0, IntPtr.Zero);
                 if (remoteThread == IntPtr.Zero)
                     return DllInjectResult.Failure | DllInjectResult.CreatingRemoteThread;
 
                 // Wait for the thread to exit.
-                //
                 WaitForSingleObject(remoteThread, WaitObject.INFINITE);
 
                 // Free the allocated memory.
-                //
                 bool memoryReleased = VirtualFreeEx(hProcess, allocatedMemory, 0, AllocationType.Release);
                 if (!memoryReleased)
                     return DllInjectResult.Failure | DllInjectResult.ReleasingMemory;
 
                 // Close the handle.
-                //
                 CloseHandle(hProcess);
             }
             catch {

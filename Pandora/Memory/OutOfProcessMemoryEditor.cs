@@ -106,8 +106,8 @@ namespace Pandora
 
         public override bool WriteProtected<T>(IntPtr address, T value)
         {
-            using (var memOp = new MemoryProtectionOperation(address, Marshal.SizeOf<T>())) {
-                if (memOp.ChangeMemoryProtection()) {
+            using (var memoryOperation = new MemoryProtectionOperation(address, Marshal.SizeOf<T>())) {
+                if (memoryOperation.Apply()) {
                     return Write(address, value);
                 }
             } return false;

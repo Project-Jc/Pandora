@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Pandora.Other
+namespace Pandora.Misc
 {
     public class Utilities
     {

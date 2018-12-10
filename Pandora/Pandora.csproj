@@ -43,6 +43,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DLL\DllInjector.cs" />
+    <Compile Include="Memory\Detour.cs" />
+    <Compile Include="Memory\Interface\IMemoryOperation.cs" />
     <Compile Include="Misc\EntryPoint.cs" />
     <Compile Include="Memory\InProcessMemoryEditor.cs" />
     <Compile Include="Memory\MemoryEditor.cs" />

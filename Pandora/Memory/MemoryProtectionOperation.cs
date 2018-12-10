@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace Pandora
 {
-    public sealed class MemoryProtectionOperation : IDisposable
+    public sealed class MemoryProtectionOperation : IDisposable, IMemoryOperation
     {
         private IntPtr HProcess;
         private IntPtr Address;
@@ -43,21 +43,33 @@ namespace Pandora
         }
 
 
-        public bool ChangeMemoryProtection() => 
-            OutOfProcess ? VirtualProtectEx(HProcess, Address, Size, FlNewProtect, ref FlOldProtect) :
-                VirtualProtect(Address, Size, FlNewProtect, ref FlOldProtect);
+        public bool Apply()
+        {
+            if (!IsApplied) {
+                IsApplied = OutOfProcess ?
+                    VirtualProtectEx(HProcess, Address, Size, FlNewProtect, out FlOldProtect) :
+                    VirtualProtect(Address, Size, FlNewProtect, out FlOldProtect);
+            } return IsApplied;
+        }
 
-        public bool ReverseMemoryProtectionChange() =>
-            OutOfProcess ? VirtualProtectEx(HProcess, Address, Size, FlOldProtect, ref FlOldProtect) :
-                VirtualProtect(Address, Size, FlOldProtect, ref FlOldProtect);
+        public bool Remove()
+        {
+            if (IsApplied) {
+                IsApplied = OutOfProcess ?
+                     VirtualProtectEx(HProcess, Address, Size, FlOldProtect, out _) :
+                     VirtualProtect(Address, Size, FlOldProtect, out _);
+            } return IsApplied;
+        }
 
-        public void Dispose() => ReverseMemoryProtectionChange();
+        public bool IsApplied { get; private set; }
+
+        public void Dispose() => Remove();
 
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool VirtualProtectEx(IntPtr hProcess, IntPtr lpAddress, int dwSize, MemoryProtectionType flNewProtect, ref MemoryProtectionType lpflOldProtect);
+        private static extern bool VirtualProtectEx(IntPtr hProcess, IntPtr lpAddress, int dwSize, MemoryProtectionType flNewProtect, out MemoryProtectionType lpflOldProtect);
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool VirtualProtect(IntPtr lpAddress, int dwSize, MemoryProtectionType flNewProtect, ref MemoryProtectionType lpflOldProtect);
+        private static extern bool VirtualProtect(IntPtr lpAddress, int dwSize, MemoryProtectionType flNewProtect, out MemoryProtectionType lpflOldProtect);
     }
 }
