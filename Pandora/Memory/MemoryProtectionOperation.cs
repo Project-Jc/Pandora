@@ -49,16 +49,18 @@ namespace Pandora
                 IsApplied = OutOfProcess ?
                     VirtualProtectEx(HProcess, Address, Size, FlNewProtect, out FlOldProtect) :
                     VirtualProtect(Address, Size, FlNewProtect, out FlOldProtect);
-            } return IsApplied;
+            }
+            return IsApplied;
         }
 
         public bool Remove()
         {
             if (IsApplied) {
-                IsApplied = OutOfProcess ?
-                     VirtualProtectEx(HProcess, Address, Size, FlOldProtect, out _) :
-                     VirtualProtect(Address, Size, FlOldProtect, out _);
-            } return IsApplied;
+                IsApplied = !(OutOfProcess ?
+                                VirtualProtectEx(HProcess, Address, Size, FlOldProtect, out _) :
+                                VirtualProtect(Address, Size, FlOldProtect, out _));
+            }
+            return !IsApplied;
         }
 
         public bool IsApplied { get; private set; }

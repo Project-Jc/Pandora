@@ -49,38 +49,27 @@ namespace Pandora
 
         public bool Apply()
         {
-            if (IsApplied)
-                return true;
-
-            using (MemoryOperation) {
-
-                if (!MemoryOperation.Apply())
-                    return false;
-
-                OriginalInstructions = MemoryEditor.ReadBytes(OriginalFunctionPtr, instructionLength);
-
-                if (!MemoryEditor.Write(OriginalFunctionPtr, DetourInstructions.ToArray()))
-                    return false;
+            if (!IsApplied) {
+                using (MemoryOperation) {
+                    if (MemoryOperation.Apply()) {
+                        OriginalInstructions = MemoryEditor.ReadBytes(OriginalFunctionPtr, instructionLength);
+                        IsApplied = MemoryEditor.Write(OriginalFunctionPtr, DetourInstructions.ToArray());
+                    }
+                }
             }
-
-            return true;
+            return IsApplied;
         }
 
         public bool Remove()
         {
-            if (!IsApplied)
-                return true;
-
-            using (MemoryOperation) {
-
-                if (!MemoryOperation.Apply())
-                    return false;
-
-                if (!MemoryEditor.Write(OriginalFunctionPtr, OriginalInstructions))
-                    return false;
+            if (IsApplied) {
+                using (MemoryOperation) {
+                    if (MemoryOperation.Apply()) {
+                        IsApplied = !MemoryEditor.Write(OriginalFunctionPtr, OriginalInstructions);
+                    }
+                }
             }
-
-            return true;
+            return !IsApplied;
         }
     }
 }
