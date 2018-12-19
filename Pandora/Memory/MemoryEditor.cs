@@ -55,77 +55,10 @@ namespace Pandora
         public string FileVersion => Process.MainModule.FileVersionInfo.FileVersion;
         public string StartTime => Process.StartTime.ToString();
 
-
-        #region Read Memory
-
-        public abstract T Read<T>(IntPtr ptr) where T : struct;
-
-        public abstract T[] ReadArray<T>(IntPtr ptr, int size) where T : struct;
-
-
-        public abstract IntPtr ReadIntPtr(IntPtr ptr);
-
-        public abstract Byte ReadByte(IntPtr ptr);
-
-        public abstract Byte[] ReadBytes(IntPtr ptr, int size);
-
-        public abstract Boolean ReadBool(IntPtr ptr);
-
-        public abstract Int16 ReadShort(IntPtr ptr);
-
-        public abstract UInt16 ReadUShort(IntPtr ptr);
-
-        public abstract Int32 ReadInt(IntPtr ptr);
-
-        public abstract UInt32 ReadUInt(IntPtr ptr);
-
-        public abstract Int64 ReadLong(IntPtr ptr);
-
-        public abstract UInt64 ReadULong(IntPtr ptr);
-
-        public abstract Single ReadFloat(IntPtr ptr);
-
-        public abstract Double ReadDouble(IntPtr ptr);
-
-        public abstract String ReadString(IntPtr ptr, System.Text.Encoding encoding, int length);
-
-        #endregion
-
-        #region Write Memory
-
-        public abstract bool Write<T>(IntPtr ptr, T value) where T : struct;
-
-        public abstract bool WriteProtected<T>(IntPtr ptr, T value) where T : struct;
-
-        public abstract bool WriteArray<T>(IntPtr ptr, T[] value) where T : struct;
-
-
-        public abstract bool Write(IntPtr ptr, byte[] values);
-
-        public abstract bool Write(IntPtr ptr, byte value);
-
-        public abstract bool Write(IntPtr ptr, short value);
-
-        public abstract bool Write(IntPtr ptr, ushort value);
-
-        public abstract bool Write(IntPtr ptr, int value);
-
-        public abstract bool Write(IntPtr ptr, uint value);
-
-        public abstract bool Write(IntPtr ptr, long value);
-
-        public abstract bool Write(IntPtr ptr, ulong value);
-
-        public abstract bool Write(IntPtr ptr, float value);
-
-        public abstract bool Write(IntPtr ptr, double value);
-
         public void Dispose()
         {
             ((IDisposable)Process).Dispose();
         }
-
-        #endregion
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, int dwProcessId);

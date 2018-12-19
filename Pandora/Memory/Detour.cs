@@ -8,7 +8,10 @@ namespace Pandora
     public enum OpCodes : byte
     {
         Push = 0x68,
-        Return = 0xC3
+        Retn = 0xC3,
+        Nop = 0x90,
+        Call = 0xE8,
+        Jmp = 0xE9
     }
 
     public class Detour : IMemoryOperation
@@ -37,7 +40,7 @@ namespace Pandora
             DetourFunction = detourFunction;
             DetourFunctionPtr = Marshal.GetFunctionPointerForDelegate(DetourFunction);
 
-            DetourInstructions = new List<byte>() { (byte)OpCodes.Push, (byte)OpCodes.Return };
+            DetourInstructions = new List<byte>() { (byte)OpCodes.Push, (byte)OpCodes.Retn };
             DetourInstructions.InsertRange(1, BitConverter.GetBytes(DetourFunctionPtr.ToInt32()));
 
             MemoryEditor = memoryEditor ?? new InProcessMemoryEditor();
@@ -70,6 +73,10 @@ namespace Pandora
                 }
             }
             return !IsApplied;
+        }
+
+        public void CallOriginalFunction(params object[] args)
+        {
         }
     }
 }
